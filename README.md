@@ -5,6 +5,8 @@ This little script is basically a launcher for the bot binary. You tell the scri
 
 I've only tested it on Linux.
 
+![eonbot-scraper-web](https://cdn.discordapp.com/attachments/380748730854539264/428235762698289163/Screen_Shot_2018-03-27_at_2.16.41_AM.png)
+
 ## Instructions
 
 You need Node.js to run this app.
