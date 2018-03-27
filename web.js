@@ -1,19 +1,44 @@
-process.title = 'eonbot-scraper-web';
+process.title = 'eonbot-scraper-web'
+const debug = !(process.env.NODE_ENV === 'production') || false
+console.debug = (...args) => debug && console.log(...args)
 
 /**
- * Config
+ * Config (read from config.properties)
  **/
-
 const config = {
-  bin: {
-    cwd: 'gui/configs',
-    cmd: './eonbot-v1.4.0-linux-amd64'
+  eonbot: {
+    dir: null,
+    bin: null
   },
   web: {
-    root: 'static',
-    port: 9009
+    root: null,
+    port: null
   }
 }
+
+/**
+ * Read bot config
+ **/
+const prop = require('properties');
+const propOptions = {
+  path: true,
+  namespaces: true
+}
+
+const configSetup = () => new Promise((resolve, reject) => {
+  prop.parse(path.join(__dirname, 'config.properties'), propOptions, (err, data) => {
+    if (!err) {
+      console.debug('eonbot-scraper-web: Setup: Reading config.properties');
+      config.eonbot.dir = data.eonbot.dir
+      config.eonbot.bin = data.eonbot.bin
+      config.web.root = data.web.root
+      config.web.port = data.web.port
+      resolve()
+    } else {
+      reject(err)
+    }
+  })
+})
 
 /**
  * Web Server Setup
@@ -29,16 +54,16 @@ const setupWebServer = () => new Promise((resolve, reject) => {
   app.use(express.static(path.join(__dirname, config.web.root)))
 
   io.on('connection', function(socket){
-    console.debug('Eonbot-Web: A user connected')
+    console.debug('eonbot-scraper-web: Web Server: A user connected')
 
     socket.on('disconnect', function(){
-      console.debug('Eonbot-Web: A user disconnected')
+      console.debug('eonbot-scraper-web: Web Server: A user disconnected')
     })
   })
 
   try {
     http.listen(config.web.port, function(){
-      console.log('Eonbot-Web: listening on *:' + config.web.port)
+      console.log('eonbot-scraper-web: Setup: Web server listening on *:' + config.web.port)
       resolve()
     })
   } catch (e) {
@@ -48,9 +73,9 @@ const setupWebServer = () => new Promise((resolve, reject) => {
 
 const startEonBot = () => new Promise((resolve, reject) => {
   const spawn = require('child_process').spawn
-  const eon   = spawn(config.bin.cmd, {cwd: config.bin.cwd})
+  const eon   = spawn(config.eonbot.dir, {cwd: config.eonbot.bin})
 
-  var cycle_start = false;
+  var cycle_start = false
   eon.stdout.on('data', function (data) {
     var package = {
       date: null,
@@ -81,12 +106,12 @@ const startEonBot = () => new Promise((resolve, reject) => {
     }
     const lines = data.toString().split('\r\n')
     if (lines[0] === '----------------------') {
-      cycle_start = true;
+      cycle_start = true
     }
     if (lines[0] === '-------------') {
       if (cycle_start) {
-        package.cycle_start = true;
-        cycle_start = false;
+        package.cycle_start = true
+        cycle_start = false
       }
       package.date = lines[1]
       const pairSplit = lines[2].split('/')
@@ -193,8 +218,9 @@ const startEonBot = () => new Promise((resolve, reject) => {
   resolve()
 })
 
-setupWebServer()
-  .then(() => startEonBot())
+configSetup()
+  .then(() => setupWebServer())
+  //.then(() => startEonBot())
   .catch((reason) => {
     console.log('Exiting: ', reason)
     process.exit(1)
