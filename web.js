@@ -127,7 +127,7 @@ const startEonBot = () => new Promise((resolve, reject) => {
         package.status = lines[3]
         package.error = true
       } else {
-        var currentLineIterator = 5
+        var currentLineIterator = 4
         var currentLine = lines[currentLineIterator]
         while (currentLine !== '~~~') {
           if (currentLine === '*Pair is in buy mode*') {
