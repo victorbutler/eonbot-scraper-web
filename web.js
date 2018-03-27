@@ -98,7 +98,12 @@ const startEonBot = () => new Promise((resolve, reject) => {
         sma: null,
         ema: null,
         buy_strategy: null,
-        sell_strategy: null
+        sell_strategy: null,
+        buy_disabled: null,
+        auto_cancel_open: null,
+        bag_buster: {
+
+        }
       },
       status: [],
       error: false,
@@ -122,41 +127,54 @@ const startEonBot = () => new Promise((resolve, reject) => {
         package.status = lines[3]
         package.error = true
       } else {
-        if (lines[4] === '*Pair is in buy mode*') {
-          package.mode = 'BUY'
-        } else if (lines[4] === '*Pair is in sell mode*') {
-          package.mode = 'SELL'
+        var currentLineIterator = 5
+        var currentLine = lines[currentLineIterator]
+        while (currentLine !== '~~~') {
+          if (currentLine === '*Pair is in buy mode*') {
+            package.mode = 'BUY'
+          }
+          if (currentLine === '*Pair is in sell mode*') {
+            package.mode = 'SELL'
+          }
+          if (currentLine === 'Bot buying for this pair is disabled') {
+            package.bot.buy_disabled = true
+          }
+          if (currentLine === 'Bot open orders auto cancelling is activated') {
+            package.bot.auto_cancel_open = true
+          }
+          currentLine = lines[currentLineIterator++]
         }
-        if (lines[7] === '~~~' && lines[8] === 'Exchange data:') {
-          var currentLineIterator = 9
-          var currentLine = lines[currentLineIterator]
-          // Exchange data
-          while (currentLine !== '~~~') {
-            const lineParts = currentLine.split(/ - ([\w\s]+)(?:\(in (\w+)\))?\: ([\d\.]+)/)
-            if (lineParts.length === 5) {
-              if (lineParts[1] === 'Last price ') {
-                package.exchange.last_price = lineParts[3]
-              }
-              if (lineParts[1] === 'Ask price ') {
-                package.exchange.ask_price = lineParts[3]
-              }
-              if (lineParts[1] === 'Bid price ') {
-                package.exchange.bid_price = lineParts[3]
-              }
-              if (lineParts[1] === package.coin + ' balance') {
-                package.exchange.coin_balance = lineParts[3]
-              }
-              if (lineParts[1] === package.base + ' balance') {
-                package.exchange.base_balance = lineParts[3]
-              }
-              if (lineParts[1] === 'Value ') {
-                package.exchange.coin_value = lineParts[3]
-              }
-            }
+        if (currentLine === '~~~') {
+          currentLine = lines[currentLineIterator++]
+          if (currentLine === 'Exchange data:') {
+            // Exchange data
             currentLine = lines[currentLineIterator++]
+            while (currentLine !== '~~~') {
+              const lineParts = currentLine.split(/ - ([\w\s]+)(?:\(in (\w+)\))?\: ([\d\.]+)/)
+              if (lineParts.length === 5) {
+                if (lineParts[1] === 'Last price ') {
+                  package.exchange.last_price = lineParts[3]
+                }
+                if (lineParts[1] === 'Ask price ') {
+                  package.exchange.ask_price = lineParts[3]
+                }
+                if (lineParts[1] === 'Bid price ') {
+                  package.exchange.bid_price = lineParts[3]
+                }
+                if (lineParts[1] === package.coin + ' balance') {
+                  package.exchange.coin_balance = lineParts[3]
+                }
+                if (lineParts[1] === package.base + ' balance') {
+                  package.exchange.base_balance = lineParts[3]
+                }
+                if (lineParts[1] === 'Value ') {
+                  package.exchange.coin_value = lineParts[3]
+                }
+              }
+              currentLine = lines[currentLineIterator++]
+            }
           }
           // Bot data
-          currentLine = lines[currentLineIterator++]
           while (currentLine !== '~~~~~') {
             const lineParts = currentLine.split(/ - ([\w\s]+)\: ([\d\.]+m?|\w+)/)
             if (lineParts.length === 4) {
@@ -185,6 +203,15 @@ const startEonBot = () => new Promise((resolve, reject) => {
                 package.bot.sell_strategy = lineParts[2]
               }
             }
+            // if (currentLine === ' - BagBuster is active') {
+            //   // Next 3 lines should be bag buster specific
+            //   for (var i = 0; i < 3; i++) {
+            //     currentLine = lines[currentLineIterator++]
+            //     if (currentLine.indexOf(' - Next BagBuster buy: ') === 0) {
+            //
+            //     }
+            //   }
+            // }
             currentLine = lines[currentLineIterator++]
           }
           currentLine = lines[currentLineIterator++]
