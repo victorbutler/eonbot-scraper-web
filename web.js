@@ -220,7 +220,7 @@ const startEonBot = () => new Promise((resolve, reject) => {
 
 configSetup()
   .then(() => setupWebServer())
-  //.then(() => startEonBot())
+  .then(() => startEonBot())
   .catch((reason) => {
     console.log('Exiting: ', reason)
     process.exit(1)
