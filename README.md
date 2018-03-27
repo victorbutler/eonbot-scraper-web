@@ -15,3 +15,8 @@ You need Node.js to run this app. Download and install from here: https://nodejs
 2. Edit the `web.js` config section to reflect where your bot binary lives
 3. Run `npm install` in the downloaded directory
 4. Run `node web.js` to start
+5. Once running, point your browser to http://localhost:9009 (or whatever you set the port to)
+
+If you're running on a VPS, make sure that port is protected behind a firewall. I use SSH to do local port forwarding so I can access the web server.
+
+On a Linux VPS: `ssh user@vps-ip -L 9009:localhost:9009`
