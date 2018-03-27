@@ -9,7 +9,7 @@ I've only tested it on Linux.
 
 ## Instructions
 
-You need Node.js to run this app.
+You need Node.js to run this app. Download and install from here: https://nodejs.org/
 
 1. Download the repository
 2. Edit the `web.js` config section to reflect where your bot binary lives
