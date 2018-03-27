@@ -1,0 +1,26 @@
+{
+  "name": "eonbot-scraper-web",
+  "version": "0.0.1",
+  "description": "Scrapes the Eonbot console during cycles, collects the data and passes it to a browser for display via Express web server.",
+  "main": "web.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/victorbutler/eonbot-scraper-web.git"
+  },
+  "keywords": [
+    "eonbot",
+    "scraper",
+    "interface",
+    "gui",
+    "table"
+  ],
+  "author": "https://github.com/victorbutler",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/victorbutler/eonbot-scraper-web/issues"
+  },
+  "homepage": "https://github.com/victorbutler/eonbot-scraper-web#readme"
+}

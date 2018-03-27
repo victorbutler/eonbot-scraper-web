@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EonBot Web - Current Status</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <!-- #FAVICONS -->
+    <link rel="shortcut icon" href="/static/img/favicon/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/static/img/favicon/favicon.ico" type="image/x-icon">
+
+    <!-- #GOOGLE FONT -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,300,400,700">
+
+  </head>
+  <body class="">
+    <div id="app">
+      <table id="all-pairs" class="table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Pair</th>
+            <th>Mode</th>
+            <th>Status</th>
+            <th>Last Price</th>
+            <th>Coin Balance (Value)</th>
+            <th>Strategy (Buy/Sell)</th>
+            <th>Buy Price</th>
+            <th>Sell Price</th>
+            <th>Current Profit <br /> Expected Profit</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+    <!-- built files will be auto injected -->
+    <!-- #PLUGINS -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js" integrity="sha384-feJI7QwhOS+hwpX2zkaeJQjeiwlhOP+SdQDqhgvvo1DsjtiSQByFdThsxO669S2D" crossorigin="anonymous"></script>
+    <!-- Link to Google CDN's jQuery + jQueryUI; fall back to local -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script>
+      if (!window.jQuery) {
+        document.write('<script src="/static/js/libs/jquery-3.2.1.min.js"><\/script>');
+      }
+    </script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      // this is really messy
+      $(function () {
+        window.database = {};
+        var socket = io();
+        var pairs = 0;
+        socket.on('cycle_chunk', function(pkg){
+          var pair = pkg.coin + '/' + pkg.base;
+          if (pkg.error && typeof database[pair] !== 'undefined') {
+            database[pair].status = pkg.status;
+            database[pair].error = pkg.error;
+            database[pair].date = pkg.date;
+            pkg = database[pair];
+          } else {
+            database[pair] = pkg;
+          }
+          var tr = $('tr[data-pair="' + pair + '"]');
+          if (tr.length) {
+            tr.empty();
+          } else {
+            tr = $('<tr />');
+            tr.attr('data-pair', pair);
+          }
+          tr.append($('<td />').append((pkg.date)));
+          tr.append($('<td />').append(pair));
+          tr.append($('<td />').append(pkg.mode));
+          var status = $('<td />').append(pkg.status);
+          if (pkg.error) {
+            status.addClass('table-warning');
+          }
+          tr.append(status);
+          tr.append($('<td />').append(pkg.exchange.last_price + ' ' + pkg.base));
+          var coinBalance = $('<td />').append(pkg.exchange.coin_balance);
+          if (pkg.exchange.coin_balance !== '0') {
+            coinBalance.append(' (' + pkg.exchange.coin_value + ' ' + pkg.base + ')');
+          }
+          tr.append(coinBalance);
+          tr.append($('<td />').append(pkg.bot.buy_strategy + '<br />' + pkg.bot.sell_strategy));
+          tr.append($('<td />').append(pkg.bot.buy_price + ' ' + pkg.base));
+          if (pkg.mode === 'SELL') {
+            tr.append($('<td />').append(pkg.bot.sell_price + ' ' + pkg.base));
+            var profit = $('<td />')
+            // These numbers here start to skew I think when DCA happens
+            var currentProfit = parseFloat(pkg.exchange.last_price) - parseFloat(pkg.bot.buy_price);
+            if (currentProfit < 0) {
+              profit.addClass('table-danger');
+            } else {
+              profit.addClass('table-success');
+            }
+            var expectedProfit = parseFloat(pkg.bot.sell_price) - parseFloat(pkg.bot.buy_price);
+            profit.append(currentProfit.toFixed(8) + ' ' + pkg.base + ' (' + Math.round(((parseFloat(currentProfit) / parseFloat(pkg.exchange.last_price)) * 10000))/100 + '%)');
+            profit.append('<br />' + expectedProfit.toFixed(8) + ' ' + pkg.base + ' (' + Math.round(((parseFloat(expectedProfit) / parseFloat(pkg.bot.sell_price)) * 10000))/100 + '%)')
+            tr.append(profit);
+          } else {
+            tr.append($('<td />').append('-'));
+            tr.append($('<td />').append('-'))
+          }
+          if ($('tr[data-pair="' + pair + '"]').length === 0) {
+            $('#all-pairs tbody').append(tr);
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
