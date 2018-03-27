@@ -22,5 +22,11 @@
   "bugs": {
     "url": "https://github.com/victorbutler/eonbot-scraper-web/issues"
   },
-  "homepage": "https://github.com/victorbutler/eonbot-scraper-web#readme"
+  "homepage": "https://github.com/victorbutler/eonbot-scraper-web#readme",
+  "dependencies": {
+    "express": "^4.16.3",
+    "http": "0.0.0",
+    "path": "^0.12.7",
+    "socket.io": "^2.0.4"
+  }
 }
