@@ -73,7 +73,6 @@ const setupWebServer = () => new Promise((resolve, reject) => {
 
 const startEonBot = () => new Promise((resolve, reject) => {
   const spawn = require('child_process').spawn
-  console.log(config.eonbot)
   const eon   = spawn(config.eonbot.bin, {cwd: config.eonbot.dir})
 
   var cycle_start = false
