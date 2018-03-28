@@ -104,15 +104,17 @@
             tr.append($('<td />').append(pkg.bot.sell_price + ' ' + pkg.base));
             var profit = $('<td />')
             // These numbers here start to skew I think when DCA happens
-            var currentProfit = parseFloat(pkg.exchange.last_price) - parseFloat(buy_price);
-            if (currentProfit < 0) {
+            var currentProfitPrice = parseFloat(pkg.exchange.last_price) - parseFloat(buy_price);
+            var currentProfitValue = parseFloat(pkg.exchange.coin_balance) * currentProfitPrice;
+            if (currentProfitPrice < 0) {
               profit.addClass('table-danger');
             } else {
               profit.addClass('table-success');
             }
-            var expectedProfit = parseFloat(pkg.bot.sell_price) - parseFloat(buy_price);
-            profit.append(currentProfit.toFixed(8) + ' ' + pkg.base + ' (' + Math.round(((parseFloat(currentProfit) / parseFloat(pkg.exchange.last_price)) * 10000))/100 + '%)');
-            profit.append('<br />' + expectedProfit.toFixed(8) + ' ' + pkg.base + ' (' + Math.round(((parseFloat(expectedProfit) / parseFloat(pkg.bot.sell_price)) * 10000))/100 + '%)')
+            var expectedProfitPrice = parseFloat(pkg.bot.sell_price) - parseFloat(buy_price);
+            var expectedProfitValue = parseFloat(pkg.exchange.coin_balance) * expectedProfitPrice;
+            profit.append(currentProfitValue.toFixed(8) + ' ' + pkg.base + ' (' + Math.round(((parseFloat(currentProfitPrice) / parseFloat(pkg.exchange.last_price)) * 10000))/100 + '%)');
+            profit.append('<br />' + expectedProfitValue.toFixed(8) + ' ' + pkg.base + ' (' + Math.round(((parseFloat(expectedProfitPrice) / parseFloat(pkg.bot.sell_price)) * 10000))/100 + '%)')
             tr.append(profit);
           } else {
             tr.append($('<td />').append('-'));
