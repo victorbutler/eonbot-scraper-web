@@ -108,8 +108,8 @@ const startEonBot = () => new Promise((resolve, reject) => {
           buy_amount: null
         },
         trend_watcher: {
-          disable: null,
-          state: null
+          enabled: null,
+          direction: null
         }
       },
       status: [],
@@ -226,6 +226,17 @@ const startEonBot = () => new Promise((resolve, reject) => {
                 if (currentLine.indexOf(' - Next BagBuster buy amount:') === 0) {
                   const buyAmountMatches = currentLine.match(/[\d\.]+%/)
                   package.bot.bagbuster.buy_amount = buyAmountMatches[0]
+                }
+                currentLine = lines[currentLineIterator++]
+              }
+            }
+            // Trends
+            if (currentLine === ' - Trends watcher is active') {
+              package.bot.trend_watcher.enabled = true
+              currentLine = lines[currentLineIterator++]
+              while (currentLine.indexOf(' - Trend') === 0) {
+                if (currentLine.indexOf(' - Trend: ') === 0) {
+                  package.bot.trend_watcher.direction = currentLine.substring(' - Trend: '.length)
                 }
                 currentLine = lines[currentLineIterator++]
               }
