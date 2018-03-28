@@ -70,7 +70,16 @@
             tr.attr('data-pair', pair);
           }
           tr.append($('<td />').append((pkg.date)));
-          tr.append($('<td />').append(pair));
+          var pairElem = $('<td />').append(pair);
+          if (pkg.bot.trend_watcher.enabled) {
+            pairElem.append('<br />Trend: ' + pkg.bot.trend_watcher.direction);
+            if (pkg.bot.trend_watcher.direction === 'uptrend') {
+              pairElem.addClass('text-success');
+            } else if (pkg.bot.trend_watcher.direction === 'downtrend') {
+              pairElem.addClass('text-danger');
+            }
+          }
+          tr.append(pairElem);
           tr.append($('<td />').append(pkg.mode));
           var status = $('<td />').append(pkg.status);
           if (pkg.error) {
