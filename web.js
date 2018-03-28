@@ -82,6 +82,8 @@ const startEonBot = () => new Promise((resolve, reject) => {
       coin: null,
       base: null,
       mode: null,
+      buy_disabled: null,
+      auto_cancel_open: null,
       exchange: {
         last_price: null,
         ask_price: null,
@@ -99,13 +101,12 @@ const startEonBot = () => new Promise((resolve, reject) => {
         ema: null,
         buy_strategy: null,
         sell_strategy: null,
-        buy_disabled: null,
-        auto_cancel_open: null,
         bagbuster: {
           enabled: null,
-          buy_percentage: null,
-          buy_price: null,
-          buy_amount: null
+          next_buy_percentage: null,
+          next_buy_price: null,
+          next_buy_amount: null,
+          prev_buy_price: null
         },
         trend_watcher: {
           enabled: null,
@@ -144,10 +145,10 @@ const startEonBot = () => new Promise((resolve, reject) => {
             package.mode = 'SELL'
           }
           if (currentLine === 'Bot buying for this pair is disabled') {
-            package.bot.buy_disabled = true
+            package.buy_disabled = true
           }
           if (currentLine === 'Bot open orders auto cancelling is activated') {
-            package.bot.auto_cancel_open = true
+            package.auto_cancel_open = true
           }
           currentLine = lines[currentLineIterator++]
         }
@@ -188,6 +189,9 @@ const startEonBot = () => new Promise((resolve, reject) => {
               if (lineParts[1] === 'Buy price') {
                 package.bot.buy_price = lineParts[2]
               }
+              if (lineParts[1] === 'Average buy price') {
+                package.bot.avg_buy_price = lineParts[2]
+              }
               if (lineParts[1] === 'Sell price') {
                 package.bot.sell_price = lineParts[2]
               }
@@ -214,21 +218,26 @@ const startEonBot = () => new Promise((resolve, reject) => {
             if (currentLine === ' - BagBuster is active') {
               package.bot.bagbuster.enabled = true
               currentLine = lines[currentLineIterator++]
-              while (currentLine.indexOf(' - Next BagBuster buy') === 0) {
+              while (currentLine.indexOf('BagBuster') > -1) {
+                lineParts = currentLine.split(/ - ([\w\s]+)\: ([\d\.]+m?|\w+)/)
+                if (lineParts[1] === 'Previous BagBuster buy price') {
+                  package.bot.bagbuster.prev_buy_price = lineParts[2]
+                }
                 if (currentLine.indexOf(' - Next BagBuster buy: after ') === 0) {
                   const buyPctMatches = currentLine.match(/[\d\.]+%/)
-                  package.bot.bagbuster.buy_percentage = buyPctMatches[0]
+                  package.bot.bagbuster.next_buy_percentage = buyPctMatches[0]
                 }
                 if (currentLine.indexOf(' - Next BagBuster buy price:') === 0) {
                   const buyPriceMatches = currentLine.match(/[\d\.]+/)
-                  package.bot.bagbuster.buy_price = buyPriceMatches[0]
+                  package.bot.bagbuster.next_buy_price = buyPriceMatches[0]
                 }
                 if (currentLine.indexOf(' - Next BagBuster buy amount:') === 0) {
                   const buyAmountMatches = currentLine.match(/[\d\.]+%/)
-                  package.bot.bagbuster.buy_amount = buyAmountMatches[0]
+                  package.bot.bagbuster.next_buy_amount = buyAmountMatches[0]
                 }
                 currentLine = lines[currentLineIterator++]
               }
+              currentLine = lines[currentLineIterator--]
             }
             // Trends
             if (currentLine === ' - Trends watcher is active') {
@@ -240,10 +249,9 @@ const startEonBot = () => new Promise((resolve, reject) => {
                 }
                 currentLine = lines[currentLineIterator++]
               }
+              currentLine = lines[currentLineIterator--]
             }
-            if (currentLine !== '~~~~~') {
-              currentLine = lines[currentLineIterator++]
-            }
+            currentLine = lines[currentLineIterator++]
           }
           currentLine = lines[currentLineIterator++]
           if (currentLine !== 'No trades') {

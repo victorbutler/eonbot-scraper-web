@@ -83,19 +83,20 @@
             coinBalance.append(' (' + pkg.exchange.coin_value + ' ' + pkg.base + ')');
           }
           tr.append(coinBalance);
+          var buy_price = pkg.bot.buy_price || pkg.bot.avg_buy_price || 0;
           tr.append($('<td />').append(pkg.bot.buy_strategy + '<br />' + pkg.bot.sell_strategy));
-          tr.append($('<td />').append(pkg.bot.buy_price + ' ' + pkg.base));
+          tr.append($('<td />').append(buy_price + ' ' + pkg.base));
           if (pkg.mode === 'SELL') {
             tr.append($('<td />').append(pkg.bot.sell_price + ' ' + pkg.base));
             var profit = $('<td />')
             // These numbers here start to skew I think when DCA happens
-            var currentProfit = parseFloat(pkg.exchange.last_price) - parseFloat(pkg.bot.buy_price);
+            var currentProfit = parseFloat(pkg.exchange.last_price) - parseFloat(buy_price);
             if (currentProfit < 0) {
               profit.addClass('table-danger');
             } else {
               profit.addClass('table-success');
             }
-            var expectedProfit = parseFloat(pkg.bot.sell_price) - parseFloat(pkg.bot.buy_price);
+            var expectedProfit = parseFloat(pkg.bot.sell_price) - parseFloat(buy_price);
             profit.append(currentProfit.toFixed(8) + ' ' + pkg.base + ' (' + Math.round(((parseFloat(currentProfit) / parseFloat(pkg.exchange.last_price)) * 10000))/100 + '%)');
             profit.append('<br />' + expectedProfit.toFixed(8) + ' ' + pkg.base + ' (' + Math.round(((parseFloat(expectedProfit) / parseFloat(pkg.bot.sell_price)) * 10000))/100 + '%)')
             tr.append(profit);
