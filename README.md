@@ -3,9 +3,11 @@ Scrapes the Eonbot console during cycles, collects the data and passes it to a b
 
 This little script is basically a launcher for the bot binary. You tell the script where to launch your binary and you execute the script. It will sit in between the bot and you, scraping the `stdout` and organizing it into chunks based on pairs. That then gets shot out to the browser via `socket.io` and a script on the page will create and update the table.
 
-I've only tested it on Linux.
+Tested on:
+* Linux
+* Windows _(thanks @MattFL#8671)_
 
-![eonbot-scraper-web](https://cdn.discordapp.com/attachments/380748730854539264/428235762698289163/Screen_Shot_2018-03-27_at_2.16.41_AM.png)
+![eonbot-scraper-web](https://cdn.discordapp.com/attachments/428289935129313280/428599626430676993/unknown.png)
 
 ## Instructions
 
