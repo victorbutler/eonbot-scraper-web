@@ -19,7 +19,7 @@ const config = {
 /**
  * Read bot config
  **/
-const prop = require('properties');
+const prop = require('properties')
 const propOptions = {
   path: true,
   namespaces: true
@@ -28,7 +28,7 @@ const propOptions = {
 const configSetup = () => new Promise((resolve, reject) => {
   prop.parse(path.join(__dirname, 'config.properties'), propOptions, (err, data) => {
     if (!err) {
-      console.debug('eonbot-scraper-web: Setup: Reading config.properties');
+      console.debug('eonbot-scraper-web: Setup: Reading config.properties')
       config.eonbot.dir = data.eonbot.dir
       config.eonbot.bin = data.eonbot.bin
       config.web.root = data.web.root
@@ -43,11 +43,11 @@ const configSetup = () => new Promise((resolve, reject) => {
 /**
  * Web Server Setup
  **/
-const express = require('express'),
-      app = express(),
-      http = require('http').Server(app),
-      io = require('socket.io')(http),
-      path = require('path');
+const express = require('express')
+const app = express()
+const http = require('http').Server(app)
+const io = require('socket.io')(http)
+const path = require('path')
 
 const setupWebServer = () => new Promise((resolve, reject) => {
 
@@ -101,8 +101,15 @@ const startEonBot = () => new Promise((resolve, reject) => {
         sell_strategy: null,
         buy_disabled: null,
         auto_cancel_open: null,
-        bag_buster: {
-
+        bagbuster: {
+          enabled: null,
+          buy_percentage: null,
+          buy_price: null,
+          buy_amount: null
+        },
+        trend_watcher: {
+          enabled: null,
+          direction: null
         }
       },
       status: [],
@@ -203,16 +210,40 @@ const startEonBot = () => new Promise((resolve, reject) => {
                 package.bot.sell_strategy = lineParts[2]
               }
             }
-            // if (currentLine === ' - BagBuster is active') {
-            //   // Next 3 lines should be bag buster specific
-            //   for (var i = 0; i < 3; i++) {
-            //     currentLine = lines[currentLineIterator++]
-            //     if (currentLine.indexOf(' - Next BagBuster buy: ') === 0) {
-            //
-            //     }
-            //   }
-            // }
-            currentLine = lines[currentLineIterator++]
+            // BagBuster
+            if (currentLine === ' - BagBuster is active') {
+              package.bot.bagbuster.enabled = true
+              currentLine = lines[currentLineIterator++]
+              while (currentLine.indexOf(' - Next BagBuster buy') === 0) {
+                if (currentLine.indexOf(' - Next BagBuster buy: after ') === 0) {
+                  const buyPctMatches = currentLine.match(/[\d\.]+%/)
+                  package.bot.bagbuster.buy_percentage = buyPctMatches[0]
+                }
+                if (currentLine.indexOf(' - Next BagBuster buy price:') === 0) {
+                  const buyPriceMatches = currentLine.match(/[\d\.]+/)
+                  package.bot.bagbuster.buy_price = buyPriceMatches[0]
+                }
+                if (currentLine.indexOf(' - Next BagBuster buy amount:') === 0) {
+                  const buyAmountMatches = currentLine.match(/[\d\.]+%/)
+                  package.bot.bagbuster.buy_amount = buyAmountMatches[0]
+                }
+                currentLine = lines[currentLineIterator++]
+              }
+            }
+            // Trends
+            if (currentLine === ' - Trends watcher is active') {
+              package.bot.trend_watcher.enabled = true
+              currentLine = lines[currentLineIterator++]
+              while (currentLine.indexOf(' - Trend') === 0) {
+                if (currentLine.indexOf(' - Trend: ') === 0) {
+                  package.bot.trend_watcher.direction = currentLine.substring(' - Trend: '.length)
+                }
+                currentLine = lines[currentLineIterator++]
+              }
+            }
+            if (currentLine !== '~~~~~') {
+              currentLine = lines[currentLineIterator++]
+            }
           }
           currentLine = lines[currentLineIterator++]
           if (currentLine !== 'No trades') {
