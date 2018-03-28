@@ -219,9 +219,9 @@ const startEonBot = () => new Promise((resolve, reject) => {
               package.bot.bagbuster.enabled = true
               currentLine = lines[currentLineIterator++]
               while (currentLine.indexOf('BagBuster') > -1) {
-                lineParts = currentLine.split(/ - ([\w\s]+)\: ([\d\.]+m?|\w+)/)
-                if (lineParts[1] === 'Previous BagBuster buy price') {
-                  package.bot.bagbuster.prev_buy_price = lineParts[2]
+                const bagBusterLineParts = currentLine.split(/ - ([\w\s]+)\: ([\d\.]+m?|\w+)/)
+                if (bagBusterLineParts[1] === 'Previous BagBuster buy price') {
+                  package.bot.bagbuster.prev_buy_price = bagBusterLineParts[2]
                 }
                 if (currentLine.indexOf(' - Next BagBuster buy: after ') === 0) {
                   const buyPctMatches = currentLine.match(/[\d\.]+%/)
