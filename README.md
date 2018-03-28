@@ -9,10 +9,10 @@ I've only tested it on Linux.
 
 ## Instructions
 
-You need Node.js to run this app. Download and install from here: https://nodejs.org/
+You need Node.js to run this app. Download and install version 9.x from here: https://nodejs.org/
 
-1. Download the repository
-2. Edit the `web.js` config section to reflect where your bot binary lives
+1. Download this repository
+2. Edit the `config.properties` file to reflect where your bot binary lives
 3. Run `npm install` in the downloaded directory
 4. Run `node web.js` to start
 5. Once running, point your browser to http://localhost:9009 (or whatever you set the port to)
