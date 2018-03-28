@@ -106,7 +106,8 @@ const startEonBot = () => new Promise((resolve, reject) => {
           next_buy_percentage: null,
           next_buy_price: null,
           next_buy_amount: null,
-          prev_buy_price: null
+          prev_buy_price: null,
+          buys_count: null
         },
         trend_watcher: {
           enabled: null,
@@ -222,6 +223,9 @@ const startEonBot = () => new Promise((resolve, reject) => {
                 const bagBusterLineParts = currentLine.split(/ - ([\w\s]+)\: ([\d\.]+m?|\w+)/)
                 if (bagBusterLineParts[1] === 'Previous BagBuster buy price') {
                   package.bot.bagbuster.prev_buy_price = bagBusterLineParts[2]
+                }
+                if (bagBusterLineParts[1] === 'BagBuster buys count since last sell') {
+                  package.bot.bagbuster.buys_count = bagBusterLineParts[2]
                 }
                 if (currentLine.indexOf(' - Next BagBuster buy: after ') === 0) {
                   const buyPctMatches = currentLine.match(/[\d\.]+%/)
