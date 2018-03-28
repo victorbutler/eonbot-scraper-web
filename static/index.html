@@ -93,7 +93,12 @@
           }
           tr.append(coinBalance);
           var buy_price = pkg.bot.buy_price || pkg.bot.avg_buy_price || 0;
-          tr.append($('<td />').append(pkg.bot.buy_strategy + '<br />' + pkg.bot.sell_strategy));
+          var strategy = $('<td />').append(pkg.bot.buy_strategy + '<br />' + pkg.bot.sell_strategy);
+          if (pkg.bot.bagbuster.enabled) {
+            var span = $('<div />').addClass('text-info').append('BagBuster<br />Next buy price: ' + Number(pkg.bot.bagbuster.next_buy_price).toFixed(8) + ' (' + pkg.bot.bagbuster.next_buy_percentage + ') <br />Next buy amount: ' + pkg.bot.bagbuster.next_buy_amount);
+            strategy.append(span);
+          }
+          tr.append(strategy);
           tr.append($('<td />').append(buy_price + ' ' + pkg.base));
           if (pkg.mode === 'SELL') {
             tr.append($('<td />').append(pkg.bot.sell_price + ' ' + pkg.base));
