@@ -77,12 +77,19 @@ const startEonBot = () => new Promise((resolve, reject) => {
 
   var cycle_start = false
   eon.stdout.on('data', function (data) {
+    var status = {
+      cycle_completed_in: null,
+      cycle_number: null,
+      next_cycle: null,
+      bot_up_time: null
+    }
     var package = {
       date: null,
       coin: null,
       base: null,
       mode: null,
       buy_disabled: null,
+      sell_disabled: null,
       auto_cancel_open: null,
       exchange: {
         last_price: null,
@@ -101,13 +108,18 @@ const startEonBot = () => new Promise((resolve, reject) => {
         ema: null,
         buy_strategy: null,
         sell_strategy: null,
+        strategy: {
+          rollercoaster_highest: null,
+          rollercoaster_lowest: null
+        },
         bagbuster: {
           enabled: null,
           next_buy_percentage: null,
           next_buy_price: null,
           next_buy_amount: null,
           prev_buy_price: null,
-          buys_count: null
+          buys_count: null,
+          loop_active: null
         },
         trend_watcher: {
           enabled: null,
@@ -131,13 +143,13 @@ const startEonBot = () => new Promise((resolve, reject) => {
       const pairSplit = lines[2].split('/')
       package.coin = pairSplit[1]
       package.base = pairSplit[0]
+      var currentLineIterator = 4
+      var currentLine = lines[currentLineIterator]
       // could be errors next
       if (lines[3].indexOf('error') > -1 || lines[3] === 'Pair already has open order(s)') {
         package.status = lines[3]
         package.error = true
       } else {
-        var currentLineIterator = 4
-        var currentLine = lines[currentLineIterator]
         while (currentLine !== '~~~') {
           if (currentLine === '*Pair is in buy mode*') {
             package.mode = 'BUY'
@@ -147,6 +159,9 @@ const startEonBot = () => new Promise((resolve, reject) => {
           }
           if (currentLine === 'Bot buying for this pair is disabled') {
             package.buy_disabled = true
+          }
+          if (currentLine === 'Bot selling for this pair is disabled') {
+            package.sell_disabled = true
           }
           if (currentLine === 'Bot open orders auto cancelling is activated') {
             package.auto_cancel_open = true
@@ -214,6 +229,12 @@ const startEonBot = () => new Promise((resolve, reject) => {
               if (lineParts[1] === 'Sell strategy') {
                 package.bot.sell_strategy = lineParts[2]
               }
+              if (lineParts[1] === 'RollerCoaster highest point') {
+                package.bot.strategy.rollercoaster_highest = lineParts[2]
+              }
+              if (lineParts[1] === 'RollerCoaster lowest point') {
+                package.bot.strategy.rollercoaster_lowest = lineParts[2]
+              }
             }
             // BagBuster
             if (currentLine === ' - BagBuster is active') {
@@ -238,6 +259,9 @@ const startEonBot = () => new Promise((resolve, reject) => {
                 if (currentLine.indexOf(' - Next BagBuster buy amount:') === 0) {
                   const buyAmountMatches = currentLine.match(/[\d\.]+%/)
                   package.bot.bagbuster.next_buy_amount = buyAmountMatches[0]
+                }
+                if (currentLine.indexOf(' - BagBuster levels loop is active') === 0) {
+                  package.bot.bagbuster.loop_active = true
                 }
                 currentLine = lines[currentLineIterator++]
               }
@@ -268,10 +292,36 @@ const startEonBot = () => new Promise((resolve, reject) => {
           }
         }
       }
-      io.emit('cycle_chunk', package)
+      // We've reached the end of the coin's chunk
+      if (currentLine === '-------------') {
+        io.emit('cycle_chunk', package)
+      }
+      // But we can still scrape status
+      if (currentLine.indexOf('Cycle completed in') === 0) {
+        while (currentLine !== '----------------------') {
+          if (currentLine.indexOf('Cycle completed in') === 0) {
+            const completedMatchesTime = currentLine.match(/[\d\.]+m?s?/)
+            status.cycle_completed_in = completedMatchesTime[0]
+          }
+          const completedMatches = currentLine.match(/Cycle (\d+) completed, starting cycle (\d+)/)
+          if (completedMatches && completedMatches.length === 3) {
+            status.cycle_number = completedMatches[1]
+          }
+          if (currentLine.indexOf('Next cycle will start in') === 0) {
+            const nextCycleMatches = currentLine.match(/[\d]+s/)
+            status.next_cycle = nextCycleMatches[0]
+          }
+          if (currentLine.indexOf('Bot up time:') === 0) {
+            const botUpTimeMatches = currentLine.match(/[\d]+s/)
+            status.bot_up_time = botUpTimeMatches[0]
+          }
+          currentLine = lines[currentLineIterator++]
+        }
+        io.emit('cycle_status', status)
+      }
     }
     // Pass all output through to the user
-    console.log(data.toString())
+    console.log(data.toString().replace(/\r\n/, ''))
   })
 
   eon.stderr.on('data', function (data) {

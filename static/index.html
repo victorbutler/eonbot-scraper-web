@@ -80,7 +80,16 @@
             }
           }
           tr.append(pairElem);
-          tr.append($('<td />').append(pkg.mode));
+          var mode = $('<td />').append(pkg.mode)
+          if (pkg.buy_disabled) {
+            if (pkg.buy_disabled) {
+              mode.append($('<div />').addClass('text-secondary').append('BUY disabled'))
+            }
+            if (pkg.sell_disabled) {
+              mode.append($('<div />').addClass('text-secondary').append('SELL disabled'))
+            }
+          }
+          tr.append(mode);
           var status = $('<td />').append(pkg.status);
           if (pkg.error) {
             status.addClass('table-warning');
@@ -93,9 +102,27 @@
           }
           tr.append(coinBalance);
           var buy_price = pkg.bot.buy_price || pkg.bot.avg_buy_price || 0;
-          var strategy = $('<td />').append(pkg.bot.buy_strategy + '<br />' + pkg.bot.sell_strategy);
+          var strategy = $('<td />')
+          if (pkg.bot.buy_strategy === 'ROLLERCOASTER' && pkg.bot.strategy && pkg.bot.strategy.rollercoaster_lowest) {
+            strategy.append('<a href="#" data-toggle="tooltip" title="" data-original-title="Lowest point: ' + pkg.bot.strategy.rollercoaster_lowest + '">' + pkg.bot.buy_strategy + '</a>')
+          } else {
+            strategy.append(pkg.bot.buy_strategy)
+          }
+          strategy.append('<br />')
+          if (pkg.bot.sell_strategy === 'ROLLERCOASTER' && pkg.bot.strategy && pkg.bot.strategy.rollercoaster_highest) {
+            strategy.append('<a href="#" data-toggle="tooltip" title="" data-original-title="Highest point: ' + pkg.bot.strategy.rollercoaster_lowest + '">' + pkg.bot.sell_strategy + '</a>')
+          } else {
+            strategy.append(pkg.bot.sell_strategy)
+          }
+          tr.append(strategy)
           if (pkg.bot.bagbuster.enabled) {
-            var span = $('<div />').addClass('text-info').append('BagBuster<br />Next buy price: ' + Number(pkg.bot.bagbuster.next_buy_price).toFixed(8) + ' (' + pkg.bot.bagbuster.next_buy_percentage + ') <br />Next buy amount: ' + pkg.bot.bagbuster.next_buy_amount);
+            var span = $('<div />').addClass('text-info').append('BagBuster on');
+            if (pkg.bot.bagbuster.next_buy_price) {
+              span.append('<br />Next buy price: ' + Number(pkg.bot.bagbuster.next_buy_price).toFixed(8) + ' (' + pkg.bot.bagbuster.next_buy_percentage + ') ');
+            }
+            if (pkg.bot.bagbuster.next_buy_amount) {
+              span.append('<br />Next buy amount: ' + pkg.bot.bagbuster.next_buy_amount);
+            }
             strategy.append(span);
           }
           tr.append(strategy);
