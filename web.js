@@ -270,7 +270,7 @@ const startEonBot = () => new Promise((resolve, reject) => {
       }
       io.emit('cycle_chunk', package)
     }
-    // Pass the output through to the user
+    // Pass all output through to the user
     console.log(data.toString())
   })
 
