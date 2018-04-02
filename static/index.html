@@ -16,7 +16,27 @@
   </head>
   <body class="">
     <div id="app">
-      <table id="all-pairs" class="table">
+      <h1>Enabled Pairs</h1>
+      <table id="enabled-pairs" class="table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Pair</th>
+            <th>Mode</th>
+            <th>Status</th>
+            <th>Last Price</th>
+            <th>Coin Balance (Value)</th>
+            <th>Strategy (Buy/Sell)</th>
+            <th>Buy Price</th>
+            <th>Sell Price</th>
+            <th>Current Profit <br /> Expected Profit</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+      <h1>Disabled Pairs</h1>
+      <table id="disabled-pairs" class="table">
         <thead>
           <tr>
             <th>Date</th>
@@ -37,14 +57,9 @@
     </div>
     <!-- built files will be auto injected -->
     <!-- #PLUGINS -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js" integrity="sha384-feJI7QwhOS+hwpX2zkaeJQjeiwlhOP+SdQDqhgvvo1DsjtiSQByFdThsxO669S2D" crossorigin="anonymous"></script>
-    <!-- Link to Google CDN's jQuery + jQueryUI; fall back to local -->
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script>
-      if (!window.jQuery) {
-        document.write('<script src="/static/js/libs/jquery-3.2.1.min.js"><\/script>');
-      }
-    </script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script>
       // this is really messy
@@ -52,7 +67,8 @@
         window.database = {};
         var socket = io();
         var pairs = 0;
-        socket.on('cycle_chunk', function(pkg){
+        socket.on('cycle_chunk', function(pkg) {
+          $('.tooltip').remove();
           var pair = pkg.coin + '/' + pkg.base;
           if (pkg.error && typeof database[pair] !== 'undefined') {
             database[pair].status = pkg.status;
@@ -148,8 +164,13 @@
             tr.append($('<td />').append('-'))
           }
           if ($('tr[data-pair="' + pair + '"]').length === 0) {
-            $('#all-pairs tbody').append(tr);
+            if ((pkg.buy_disabled || pkg.sell_disabled) && pkg.exchange.coin_balance === '0' || (pkg.buy_disabled && pkg.sell_disabled)) {
+              $('#disabled-pairs tbody').append(tr);
+            } else {
+              $('#enabled-pairs tbody').append(tr);
+            }
           }
+          tr.find('[data-toggle="tooltip"]').tooltip();
         });
       });
     </script>
