@@ -282,14 +282,14 @@ const startEonBot = () => new Promise((resolve, reject) => {
             currentLine = lines[currentLineIterator++]
           }
           currentLine = lines[currentLineIterator++]
-          if (currentLine !== 'No trades') {
+          // if (currentLine !== 'No trades') {
             var status = []
             while (currentLine !== '-------------') {
               status.push(currentLine)
               currentLine = lines[currentLineIterator++]
             }
             package.status = status
-          }
+          // }
         }
       }
       // We've reached the end of the coin's chunk
@@ -321,7 +321,7 @@ const startEonBot = () => new Promise((resolve, reject) => {
       }
     }
     // Pass all output through to the user
-    console.log(data.toString().replace(/\r\n/, ''))
+    console.log(data.toString())
   })
 
   eon.stderr.on('data', function (data) {
